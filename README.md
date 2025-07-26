@@ -25,7 +25,7 @@ The goal of this project is to develop a sensor-based assessment system for lowe
 
 ## Technologies
 
-- Python (NumPy, Pandas, SciPy, Matplotlib, etc.), HTML5, CSS3, Javascript, Arduino.
+- Python (NumPy, Pandas, SciPy, Matplotlib, etc.), Arduino, HTML5, CSS3, Javascript.
 - IMU data processing (accelerometer + gyroscope)
 - Signal filtering and cycle segmentation
 - Classification and evaluation pipeline
