@@ -1,0 +1,2 @@
+ID      , Status, AccX , AccY, AccZ, GyroX, GyroY, GyroZ, Timestamp   , Timestamp_us
+Sensor_1, Active, -0.01, 0.01, 1.09, -4.08, -2.29, -1.30, 01:31:132000, 91132000

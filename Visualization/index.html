@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trực Quan Hóa Dữ Liệu Vật Lý Trị Liệu</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Link to your external CSS file -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Bảng Điều Khiển Phân Tích Dữ Liệu Cảm Biến</h1>
+            <p class="text-gray-600 mt-2">Trực quan hóa và xử lý dữ liệu vật lý trị liệu từ cảm biến.</p>
+        </header>
+
+        <!-- File Input and Controls -->
+        <div class="bg-white p-4 rounded-lg shadow-md mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+             <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                <label for="file-upload" class="font-medium text-gray-700">Tải lên tệp CSV của bạn:</label>
+             </div>
+            <input type="file" id="file-upload" accept=".csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div id="tabs" class="mb-6 hidden">
+            <div class="border-b border-gray-200 flex justify-between items-center pb-2">
+                <nav class="-mb-px flex space-x-4" aria-label="Tabs">
+                    <button onclick="changeTab('raw')" class="tab-button active whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm rounded-t-md">Dữ Liệu Gốc</button>
+                    <button onclick="changeTab('smoothed')" class="tab-button whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm rounded-t-md">Dữ Liệu Đã Làm Mịn</button>
+                    <button onclick="changeTab('segmentation')" class="tab-button whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm rounded-t-md">Phân Đoạn Dữ Liệu</button>
+                    <button onclick="changeTab('dft')" class="tab-button whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm rounded-t-md">Phân Tích Tần Số</button>
+                </nav>
+                <button id="reset-zoom-btn" class="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors px-3 py-1 rounded-md bg-blue-50 hover:bg-blue-100">Reset Zoom</button>
+            </div>
+        </div>
+
+        <!-- Chart Display Area -->
+        <div id="chart-area">
+            <div id="initial-message" class="text-center py-16 px-6 bg-white rounded-lg shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-gray-400"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-800">Vui lòng tải lên một tệp CSV để bắt đầu</h3>
+                <p class="mt-1 text-sm text-gray-500">Sử dụng con lăn chuột để thu phóng và kéo chuột để di chuyển biểu đồ.</p>
+            </div>
+            <div id="loading" class="hidden flex-col items-center justify-center py-16 px-6 bg-white rounded-lg shadow-md">
+                <div id="loading-spinner"></div>
+                <p class="mt-4 text-gray-600">Đang xử lý dữ liệu...</p>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="raw" class="tab-content grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+            
+            <div id="smoothed" class="tab-content hidden">
+                 <div class="p-4 bg-white rounded-lg shadow-md mb-6">
+                    <label for="ma-window-size" class="block font-medium text-gray-700">Mức độ làm mịn (Kích thước cửa sổ): <span id="ma-window-value" class="font-bold text-blue-600">11</span></label>
+                    <input type="range" id="ma-window-size" min="3" max="101" step="2" value="11" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2">
+                 </div>
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="chart-container"><canvas id="smoothedAccChart"></canvas></div>
+                    <div class="chart-container"><canvas id="smoothedGyroChart"></canvas></div>
+                </div>
+            </div>
+
+            <div id="segmentation" class="tab-content hidden">
+                <div class="p-4 bg-white rounded-lg shadow-md mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div>
+                            <label for="segmentation-signal-selector" class="block text-sm font-medium text-gray-700">Chọn tín hiệu phân đoạn:</label>
+                             <select id="segmentation-signal-selector" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option value="AccMagnitude" selected>Độ lớn Gia tốc</option>
+                                <option value="AccX">Gia tốc X (AccX)</option>
+                                <option value="AccY">Gia tốc Y (AccY)</option>
+                                <option value="AccZ">Gia tốc Z (AccZ)</option>
+                                <option value="GyroMagnitude">Độ lớn Con quay</option>
+                                <option value="GyroX">Con quay X (GyroX)</option>
+                                <option value="GyroY">Con quay Y (GyroY)</option>
+                                <option value="GyroZ">Con quay Z (GyroZ)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="peak-threshold" class="block text-sm font-medium text-gray-700">Ngưỡng tối thiểu</label>
+                            <input type="number" id="peak-threshold" value="1.0" step="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="peak-distance" class="block text-sm font-medium text-gray-700">Khoảng cách tối thiểu</label>
+                            <input type="number" id="peak-distance" value="50" step="1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="flex flex-col items-start">
+                            <button id="apply-segmentation-btn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">Tìm Đỉnh & Phân Đoạn</button>
+                            <p class="text-sm mt-2 font-semibold">Đã tìm thấy: <span id="peak-count" class="text-red-600">0</span> lần đạp</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container"><canvas id="segmentationChart"></canvas></div>
+            </div>
+
+            <div id="dft" class="tab-content hidden">
+                <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                    <label for="dft-signal-selector" class="block font-medium text-gray-700">Chọn tín hiệu để phân tích tần số (dữ liệu gốc):</label>
+                    <select id="dft-signal-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                        <option value="AccX" selected>Gia tốc X (AccX)</option>
+                        <option value="AccY">Gia tốc Y (AccY)</option>
+                        <option value="AccZ">Gia tốc Z (AccZ)</option>
+                        <option value="GyroX">Con quay X (GyroX)</option>
+                        <option value="GyroY">Con quay Y (GyroY)</option>
+                        <option value="GyroZ">Con quay Z (GyroZ)</option>
+                        <option value="AccMagnitude">Độ lớn Gia tốc</option>
+                        <option value="GyroMagnitude">Độ lớn Con quay</option>
+                    </select>
+                </div>
+                <div class="chart-container"><canvas id="dftChart"></canvas></div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    
+    <!-- Link to your external JS file -->
+    <script src="script.js"></script>
+</body>
+</html>

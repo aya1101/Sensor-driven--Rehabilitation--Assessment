@@ -1,0 +1,11 @@
+Hỗ trợ chẩn đoán đứt dây chằng chéo trước trên bài tập đạp chân.
+Tính mỗi lần đạp 1 data --> chọn mẫu có biên độ đạp lớn nhất
+1. Viết introduction
+2. Preprocessing data 
++(tính chia thành các mẫu có biên độ) 
++ Chuẩn hoá tích cỡ mỗi mẫu (nội suy hoặc lấy trung bình)
++ PCA
+3. Khảo sát tích cỡ data tối ưu mỗi mẫu (128, 1024,40
+5. Sửa code: thầy cho sẵn code làm mịn rồi thì đọc và viết report --> sửa code lần sau dùng
+6. Nghiên cứu cách cut data (1 lần đạp + thu về)
+4. Xây mô hình 
